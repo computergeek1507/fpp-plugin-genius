@@ -11,6 +11,8 @@
 #include "log.h"
 #include "MultiSync.h"
 
+#include "Warnings.h"
+
 #include "fppversion_defines.h"
 
 #include "commands/Commands.h"
@@ -25,9 +27,9 @@ public:
         LogInfo(VB_PLUGIN, "Initializing Genius Plugin\n");
         //readFiles();
         registerCommand();
+        GetAllControllerWarnings();
     }
     virtual ~GeniusPlugin() {
-
     }
 
     class GeniusGetControllerStatus : public Command {
@@ -39,7 +41,10 @@ public:
         
         virtual std::unique_ptr<Command::Result> run(const std::vector<std::string> &args) override {
             std::string ipAddress = "";
-            //plugin->SetControllerTestModeOn(ipAddress, type, checkList);
+            if (args.size() >= 1) {
+                ipAddress = args[0];
+            }
+            plugin->GetControllerWarnings(ipAddress);
             return std::make_unique<Command::Result>("Get Genius Controller Status");
         }
         GeniusPlugin *plugin;
@@ -52,7 +57,7 @@ public:
         }
         
         virtual std::unique_ptr<Command::Result> run(const std::vector<std::string> &args) override {                        
-            //plugin->SetAllControllerTestModeOff();
+            plugin->GetAllControllerWarnings();
             return std::make_unique<Command::Result>("Get Genius Controller Status");
         }
         GeniusPlugin *plugin;
@@ -64,6 +69,12 @@ public:
         CommandManager::INSTANCE.addCommand(new GeniusGetAllControllerStatus(this));
     }
 
+    virtual void playlistCallback(const Json::Value &playlist, const std::string &action, const std::string &section, int item) {
+        if (settings["Start"] == "PlaylistStart" && action == "start") {
+            GetAllControllerWarnings();
+        }  
+    }
+
     std::unique_ptr<GeniusController> MakeController(std::string const& ip, MultiSyncSystemType const& type) {
         if (0xA0 <= type && 0xAF > type) {
             return std::move(std::make_unique<GeniusController>(ip));
@@ -73,33 +84,33 @@ public:
         return nullptr;
     }
 
-    void SetControllerTestModeOn(std::string const& ip) {
+    void GetControllerWarnings(std::string const& ip) {
         if(ip.find(",") != std::string::npos) {
             auto ips = split(ip, ',');
             for(auto const& ip_ : ips) {
                 std::unique_ptr<GeniusController> controllerItem = std::make_unique<GeniusController>(ip_);
-                //if(controllerItem)controllerItem->setTestModeOn();
+                if(controllerItem)controllerItem->GetWarnings();
             }
         } else {
             std::unique_ptr<GeniusController> controllerItem = std::make_unique<GeniusController>(ip);
-            //if(controllerItem)controllerItem->setTestModeOn();
+            if(controllerItem)controllerItem->GetWarnings();
         }
     }
 
-    void SetAllControllerTestModeOn() {        
+    void GetAllControllerWarnings() {        
         for (auto system : multiSync->GetLocalSystems()){
             if(system.type == MultiSyncSystemType::kSysTypeUnknown) {
                 return;
             }
             std::unique_ptr<GeniusController> controllerItem = MakeController(system.address, system.type);
-            //if(controllerItem)controllerItem->setTestModeOn();
+            if(controllerItem)controllerItem->GetWarnings();
         }
         for (auto system : multiSync->GetRemoteSystems()){
             if(system.type == MultiSyncSystemType::kSysTypeUnknown) {
                 return;
             }
             std::unique_ptr<GeniusController> controllerItem = MakeController(system.address, system.type);
-            //if(controllerItem)controllerItem->setTestModeOn();
+            if(controllerItem)controllerItem->GetWarnings();
         }
     }
 
