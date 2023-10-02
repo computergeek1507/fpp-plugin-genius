@@ -1,0 +1,20 @@
+{
+	"repoName": "fpp-plugin-Genius",
+	"name": "Genius Plugin for FPP",
+	"author": "Scott Hanson (computergeek1507)",
+	"description": "Experience Genius Status Monitor.",
+	"homeURL": "https://github.com/computergeek1507/fpp-plugin-genius",
+	"srcURL": "https://github.com/computergeek1507/fpp-plugin-genius.git",
+	"bugURL": "https://github.com/computergeek1507/fpp-plugin-genius/issues",
+	"allowUpdates": 1,
+	"versions": [
+		{
+			"minFPPVersion": "7.2",
+			"maxFPPVersion": "0",
+			"branch": "main",
+			"sha": "",
+			"dependencies": {
+			}
+		}
+	]
+}
